@@ -1,18 +1,13 @@
-use std::sync::{Arc, Mutex};
+use crate::types::*;
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Mutex,
+};
 use uuid::Uuid;
-use crate::types::{Job, Vote};
 
-#[derive(Clone)]
-pub struct AppState {
-    pub jobs: Arc<Mutex<Vec<Job>>>,
-    pub votes: Arc<Mutex<Vec<Vote>>>,
-}
-
-impl AppState {
-    pub fn new() -> Self {
-        Self {
-            jobs: Arc::new(Mutex::new(Vec::new())),
-            votes: Arc::new(Mutex::new(Vec::new())),
-        }
-    }
+pub struct NodeState {
+    pub jobs: Mutex<HashMap<Uuid, Job>>,
+    pub votes: Mutex<HashMap<Uuid, Vec<Vote>>>,
+    pub chain: Mutex<Vec<Block>>,
+    pub finalized: Mutex<HashSet<Uuid>>, // 🔒 FASE 5 LOCK
 }
