@@ -1,0 +1,14 @@
+/home/svfotocopy/Documents/utilon/UTILON/target/release/deps/serde-ff07cc9270398cec.d: /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /home/svfotocopy/Documents/utilon/UTILON/target/release/build/serde-9d08b465ff0b51b1/out/private.rs
+
+/home/svfotocopy/Documents/utilon/UTILON/target/release/deps/libserde-ff07cc9270398cec.rlib: /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /home/svfotocopy/Documents/utilon/UTILON/target/release/build/serde-9d08b465ff0b51b1/out/private.rs
+
+/home/svfotocopy/Documents/utilon/UTILON/target/release/deps/libserde-ff07cc9270398cec.rmeta: /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /home/svfotocopy/Documents/utilon/UTILON/target/release/build/serde-9d08b465ff0b51b1/out/private.rs
+
+/home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/home/svfotocopy/Documents/utilon/UTILON/target/release/build/serde-9d08b465ff0b51b1/out/private.rs:
+
+# env-dep:OUT_DIR=/home/svfotocopy/Documents/utilon/UTILON/target/release/build/serde-9d08b465ff0b51b1/out
