@@ -17,18 +17,22 @@ pub async fn receive_message(
         }
 
         MessageType::JobVerificationVote => {
-            if let Ok(vote) = serde_json::from_value::<Vote>(envelope.payload) {
-                println!("🗳️ Vote received for job {}", vote.job_id);
-                state.votes.lock().unwrap().push(vote);
+    if let Ok(vote) = serde_json::from_value::<Vote>(envelope.payload) {
+        let job_id = vote.job_id; // ambil dulu
 
-                let mut jobs = state.jobs.lock().unwrap();
-                let votes = state.votes.lock().unwrap();
+        println!("🗳️ Vote received for job {}", job_id);
 
-                if let Some(job) = jobs.iter_mut().find(|j| j.job_id == vote.job_id) {
-                    try_finalize(job, &votes);
-                }
-            }
+        state.votes.lock().unwrap().push(vote);
+
+        let mut jobs = state.jobs.lock().unwrap();
+        let votes = state.votes.lock().unwrap();
+
+        if let Some(job) = jobs.iter_mut().find(|j| j.job_id == job_id) {
+            try_finalize(job, &votes);
         }
+    }
+}
+
 
         _ => {}
     }
