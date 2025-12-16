@@ -2,6 +2,7 @@ mod crypto;
 mod network;
 mod types;
 mod state;
+mod consensus;
 
 use axum::{Router, routing::post};
 use state::AppState;
