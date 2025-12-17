@@ -1,23 +1,23 @@
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Job {
-    pub id: Uuid,
+    pub id: String,
     pub payload: String,
-    pub required_votes: u32,
+    pub reward: u64,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Vote {
-    pub job_id: Uuid,
+    pub job_id: String,
     pub worker: String,
-    pub result: String,
+    pub result_hash: String,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Block {
     pub index: u64,
-    pub job_id: Uuid,
-    pub result: String,
+    pub job_id: String,
+    pub result_hash: String,
+    pub rewards: Vec<(String, u64)>,
 }

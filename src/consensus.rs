@@ -1,53 +1,49 @@
-use crate::{state::NodeState, types::*};
-use uuid::Uuid;
+use crate::{state::SharedState, types::*};
 
-pub fn try_finalize(
-    state: &NodeState,
-    job_id: Uuid,
-) -> Option<Block> {
+pub fn try_finalize(job_id: &str, state: &SharedState) -> Option<Block> {
+    let mut finalized = state.finalized.lock().unwrap();
+    if finalized.contains(job_id) {
+        return None;
+    }
+
     let votes = state.votes.lock().unwrap();
-    let jobs = state.jobs.lock().unwrap();
-    let finalized = state.finalized.lock().unwrap();
+    let job_votes = votes.get(job_id)?;
 
-    if finalized.contains(&job_id) {
+    if job_votes.len() < 2 {
         return None;
     }
 
-    let job = jobs.get(&job_id)?;
-    let vote_count = votes.get(&job_id)?.len();
-
-    if vote_count < job.required_votes as usize {
+    let hash = &job_votes[0].result_hash;
+    if !job_votes.iter().all(|v| &v.result_hash == hash) {
         return None;
     }
 
-    drop(votes);
-    drop(jobs);
-    drop(finalized);
+    let reward_each = {
+        let jobs = state.jobs.lock().unwrap();
+        let job = jobs.get(job_id)?;
+        job.reward / job_votes.len() as u64
+    };
+
+    let mut balances = state.balances.lock().unwrap();
+    let rewards: Vec<(String, u64)> = job_votes
+        .iter()
+        .map(|v| {
+            let entry = balances.entry(v.worker.clone()).or_insert(0);
+            *entry += reward_each;
+            (v.worker.clone(), reward_each)
+        })
+        .collect();
 
     let mut chain = state.chain.lock().unwrap();
-    let index = chain.len() as u64;
-
-    let result = state
-        .votes
-        .lock()
-        .unwrap()
-        .get(&job_id)
-        .unwrap()[0]
-        .result
-        .clone();
-
     let block = Block {
-        index,
-        job_id,
-        result,
+        index: chain.len() as u64,
+        job_id: job_id.to_string(),
+        result_hash: hash.clone(),
+        rewards,
     };
 
     chain.push(block.clone());
-
-    // 🔒 FINALIZATION LOCK
-    state.finalized.lock().unwrap().insert(job_id);
-    state.jobs.lock().unwrap().remove(&job_id);
-    state.votes.lock().unwrap().remove(&job_id);
+    finalized.insert(job_id.to_string());
 
     Some(block)
 }

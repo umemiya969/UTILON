@@ -3,71 +3,75 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
-use std::sync::Arc;
 
 use crate::{
     consensus::try_finalize,
-    state::NodeState,
+    state::SharedState,
     types::{Block, Job, Vote},
 };
 
-pub fn router(state: Arc<NodeState>) -> Router {
+use std::collections::HashMap;
+
+pub fn router(state: SharedState) -> Router {
     Router::new()
-        .route("/job/submit", post(submit_job))
-        .route("/job/next", get(next_job))
-        .route("/job/vote", post(submit_vote))
+        .route("/job", post(submit_job))
+        .route("/vote", post(submit_vote))
+        .route("/finalize", post(finalize_job))
+        .route("/balances", get(get_balances))
         .route("/chain", get(get_chain))
         .with_state(state)
 }
 
 async fn submit_job(
-    State(state): State<Arc<NodeState>>,
+    State(state): State<SharedState>,
     Json(job): Json<Job>,
 ) -> Json<&'static str> {
-    state.jobs.lock().unwrap().insert(job.id, job);
-    Json("ok")
-}
-
-async fn next_job(
-    State(state): State<Arc<NodeState>>,
-) -> Json<Option<Job>> {
-    let jobs = state.jobs.lock().unwrap();
-    let finalized = state.finalized.lock().unwrap();
-
-    let job = jobs
-        .values()
-        .find(|j| !finalized.contains(&j.id))
-        .cloned();
-
-    Json(job)
+    state.jobs.lock().unwrap().insert(job.id.clone(), job);
+    Json("job accepted")
 }
 
 async fn submit_vote(
-    State(state): State<Arc<NodeState>>,
+    State(state): State<SharedState>,
     Json(vote): Json<Vote>,
 ) -> Json<&'static str> {
-    if state.finalized.lock().unwrap().contains(&vote.job_id) {
-        return Json("rejected: finalized");
-    }
-
     state
         .votes
         .lock()
         .unwrap()
-        .entry(vote.job_id)
+        .entry(vote.job_id.clone())
         .or_default()
-        .push(vote.clone());
+        .push(vote);
 
-    if let Some(block) = try_finalize(&state, vote.job_id) {
-        println!("⛓ FINALIZED BLOCK #{}", block.index);
-    }
-
-    Json("ok")
+    Json("vote accepted")
 }
 
+async fn finalize_job(
+    State(state): State<SharedState>,
+    Json(payload): Json<serde_json::Value>,
+) -> Json<serde_json::Value> {
+    let job_id = payload["job_id"].as_str().unwrap();
+
+    match try_finalize(job_id, &state) {
+        Some(block) => Json(serde_json::json!({
+            "status": "finalized",
+            "block": block
+        })),
+        None => Json(serde_json::json!({
+            "status": "pending"
+        })),
+    }
+}
+
+/* ✅ FIXED: TYPE KONKRET */
+async fn get_balances(
+    State(state): State<SharedState>,
+) -> Json<HashMap<String, u64>> {
+    Json(state.balances.lock().unwrap().clone())
+}
+
+/* ✅ FIXED: TYPE KONKRET */
 async fn get_chain(
-    State(state): State<Arc<NodeState>>,
+    State(state): State<SharedState>,
 ) -> Json<Vec<Block>> {
-    let chain = state.chain.lock().unwrap();
-    Json(chain.clone())
+    Json(state.chain.lock().unwrap().clone())
 }

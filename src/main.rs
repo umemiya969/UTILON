@@ -2,35 +2,34 @@ mod consensus;
 mod network;
 mod state;
 mod types;
-mod crypto;
 
-use crate::state::NodeState;
-use axum::Router;
+use axum::Server;
+use state::NodeState;
 use std::{
     collections::{HashMap, HashSet},
+    net::SocketAddr,
     sync::{Arc, Mutex},
 };
-use tokio::net::TcpListener;
 
 #[tokio::main]
 async fn main() {
-    let state: Arc<NodeState> = Arc::new(NodeState {
+    let state = Arc::new(NodeState {
         jobs: Mutex::new(HashMap::new()),
         votes: Mutex::new(HashMap::new()),
-        chain: Mutex::new(Vec::new()),
         finalized: Mutex::new(HashSet::new()),
+        chain: Mutex::new(Vec::new()),
+        balances: Mutex::new(HashMap::new()),
     });
 
-    let app: Router = network::router(state);
+    let app = network::router(state);
 
-    let addr = "127.0.0.1:9933";
-    println!("🚀 UTILON node running at {}", addr);
+    let port = std::env::var("PORT").unwrap_or("9933".into());
+    let addr: SocketAddr = format!("127.0.0.1:{}", port).parse().unwrap();
 
-    let listener = TcpListener::bind(addr)
+    println!("🚀 UTILON running at {}", addr);
+
+    Server::bind(&addr)
+        .serve(app.into_make_service())
         .await
-        .expect("failed to bind");
-
-    axum::serve(listener, app)
-        .await
-        .expect("server error");
+        .unwrap();
 }
