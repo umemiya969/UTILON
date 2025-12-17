@@ -4,6 +4,7 @@ mod consensus;
 mod network;
 mod validate;
 mod storage;
+mod fork;
 
 
 use std::sync::{Arc, Mutex};

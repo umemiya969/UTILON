@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex};
 use crate::{state::NodeState, types::*, consensus::try_finalize};
 use uuid::Uuid;
 use crate::validate::validate_chain;
+use crate::fork::is_better_chain;
 
 pub fn router(state: Arc<Mutex<NodeState>>) -> Router {
     Router::new()
@@ -63,14 +64,18 @@ async fn get_balance(
 }
 
 
+
 pub fn receive_chain(state: &mut NodeState, incoming: Vec<Block>) {
     if !validate_chain(&incoming) {
-        println!("⛔ Rejected invalid chain from peer");
+        println!("⛔ Rejected invalid chain");
         return;
     }
 
-    if incoming.len() > state.chain.len() {
-        println!("🔄 Chain updated from peer");
+    if is_better_chain(&state.chain, &incoming) {
+        println!("🌿 Switched to better chain (len={})", incoming.len());
         state.chain = incoming;
+    } else {
+        println!("ℹ️ Local chain kept");
     }
 }
+
