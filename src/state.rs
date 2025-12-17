@@ -1,7 +1,8 @@
 use std::collections::HashMap;
-use crate::types::*;
 use uuid::Uuid;
+use crate::types::*;
 
+#[derive(Default)]
 pub struct NodeState {
     pub jobs: HashMap<Uuid, Job>,
     pub votes: HashMap<Uuid, Vec<Vote>>,
@@ -11,11 +12,6 @@ pub struct NodeState {
 
 impl NodeState {
     pub fn new() -> Self {
-        Self {
-            jobs: HashMap::new(),
-            votes: HashMap::new(),
-            chain: Vec::new(),
-            balances: HashMap::new(),
-        }
+        Self::default()
     }
 }

@@ -1,79 +1,91 @@
-use axum::{Router, routing::{post, get}, Json, extract::State};
+use axum::{
+    routing::{get, post},
+    Json, Router,
+    extract::State,
+};
 use std::sync::{Arc, Mutex};
-use crate::{state::NodeState, types::*, consensus::try_finalize};
 use uuid::Uuid;
-use crate::validate::validate_chain;
-use crate::fork::is_better_chain;
+
+use crate::{
+    state::NodeState,
+    types::*,
+    consensus::try_finalize,
+    storage,
+};
+
+#[derive(serde::Deserialize)]
+pub struct SubmitJobReq {
+    pub payload: String,
+    pub reward: u64,
+}
+
+#[derive(serde::Deserialize)]
+pub struct VoteReq {
+    pub job_id: Uuid,
+    pub worker: String,
+    pub result_hash: String,
+}
 
 pub fn router(state: Arc<Mutex<NodeState>>) -> Router {
     Router::new()
         .route("/job", post(submit_job))
-        .route("/vote", post(submit_vote))
-        .route("/finalize", post(finalize))
+        .route("/vote", post(vote))
         .route("/chain", get(get_chain))
-        .route("/balance", get(get_balance))
+        .route("/p2p/chain", post(sync_chain))
         .with_state(state)
 }
 
 async fn submit_job(
     State(state): State<Arc<Mutex<NodeState>>>,
-    Json(mut job): Json<Job>,
-) -> Json<Job> {
-    job.id = Uuid::new_v4();
-    state.lock().unwrap().jobs.insert(job.id, job.clone());
-    Json(job)
+    Json(req): Json<SubmitJobReq>,
+) -> Json<Uuid> {
+    let mut s = state.lock().unwrap();
+
+    let job = Job {
+        id: Uuid::new_v4(),
+        payload: req.payload,
+        reward: req.reward,
+        finalized: false,
+    };
+
+    s.jobs.insert(job.id, job.clone());
+    s.votes.insert(job.id, vec![]);
+
+    Json(job.id)
 }
 
-async fn submit_vote(
+async fn vote(
     State(state): State<Arc<Mutex<NodeState>>>,
-    Json(vote): Json<Vote>,
-) -> Json<&'static str> {
+    Json(req): Json<VoteReq>,
+) -> Json<bool> {
     let mut s = state.lock().unwrap();
-    let votes = s.votes.entry(vote.job_id).or_default();
 
-    if votes.iter().any(|v| v.worker == vote.worker) {
-        return Json("duplicate_vote");
-    }
+    s.votes.entry(req.job_id).or_default().push(Vote {
+        job_id: req.job_id,
+        worker: req.worker,
+        result_hash: req.result_hash,
+    });
 
-    votes.push(vote);
-    Json("ok")
-}
+    let finalized = try_finalize(&mut s, req.job_id).is_some();
+    storage::save_chain(&s.chain).ok();
 
-
-async fn finalize(
-    State(state): State<Arc<Mutex<NodeState>>>,
-    Json(id): Json<Uuid>,
-) -> Json<&'static str> {
-    let mut s = state.lock().unwrap();
-    match try_finalize(&mut s, id) {
-        Some(_) => Json("finalized"),
-        None => Json("not_ready"),
-    }
+    Json(finalized)
 }
 
 async fn get_chain(
     State(state): State<Arc<Mutex<NodeState>>>,
 ) -> Json<Vec<Block>> {
-    Json(state.lock().unwrap().chain.clone())
+    let s = state.lock().unwrap();
+    Json(s.chain.clone())
 }
 
-async fn get_balance(
+async fn sync_chain(
     State(state): State<Arc<Mutex<NodeState>>>,
-) -> Json<std::collections::HashMap<String, u64>> {
-    Json(state.lock().unwrap().balances.clone())
-}
-
-pub fn receive_chain(state: &mut NodeState, incoming: Vec<Block>) {
-    if !validate_chain(&incoming) {
-        println!("⛔ Rejected invalid chain");
-        return;
-    }
-
-    if is_better_chain(&state.chain, &incoming) {
-        println!("🌿 Switched to better chain (len={})", incoming.len());
-        state.chain = incoming;
-    } else {
-        println!("ℹ️ Local chain kept");
+    Json(remote): Json<Vec<Block>>,
+) {
+    let mut s = state.lock().unwrap();
+    if remote.len() > s.chain.len() {
+        s.chain = remote;
+        storage::save_chain(&s.chain).ok();
     }
 }
-

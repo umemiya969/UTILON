@@ -1,34 +1,25 @@
 mod types;
 mod state;
 mod consensus;
-mod network;
-mod validate;
 mod storage;
-mod fork;
-
+mod p2p;
+mod network;
 
 use std::sync::{Arc, Mutex};
-use state::NodeState;
-use std::net::SocketAddr;
+use axum::Router;
+use tokio::net::TcpListener;
+use crate::state::NodeState;
 
 #[tokio::main]
 async fn main() {
-
-    use crate::storage::load_chain;
-
     let mut state = NodeState::new();
-    state.chain = load_chain();
-    println!("📦 Loaded chain with {} blocks", state.chain.len());
+    state.chain = storage::load_chain();
 
-    use crate::storage::save_chain;
+    let shared = Arc::new(Mutex::new(state));
+    let app: Router = network::router(shared);
 
-    save_chain(&state.chain);
+    let listener = TcpListener::bind("127.0.0.1:9933").await.unwrap();
+    println!("🧱 PoUC node running on 9933");
 
-    let state = Arc::new(Mutex::new(state));
-    let app = network::router(state);
-
-    let addr: SocketAddr= "127.0.0.1:9933".parse().unwrap();
-    println!("🚀 UTILON node running at {}", addr);
-
-    axum::serve(tokio::net::TcpListener::bind(addr).await.unwrap(), app).await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }

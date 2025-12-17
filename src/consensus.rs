@@ -2,7 +2,6 @@ use crate::{state::NodeState, types::*};
 
 pub fn try_finalize(state: &mut NodeState, job_id: uuid::Uuid) -> Option<Block> {
     let job = state.jobs.get_mut(&job_id)?;
-
     if job.finalized {
         return None;
     }
@@ -27,18 +26,9 @@ pub fn try_finalize(state: &mut NodeState, job_id: uuid::Uuid) -> Option<Block> 
     job.finalized = true;
     state.chain.push(block.clone());
 
-    use std::collections::HashSet;
-
-let mut rewarded = HashSet::new();
-
-for v in votes {
-    if rewarded.insert(&v.worker) {
-        *state.balances
-            .entry(v.worker.clone())
-            .or_insert(0) += job.reward;
+    for v in votes {
+        *state.balances.entry(v.worker.clone()).or_insert(0) += job.reward;
     }
-}
-
 
     Some(block)
 }

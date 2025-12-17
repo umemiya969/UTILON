@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "index": 0,
+    "job_id": "a78ec92e-7c04-4347-956c-abbec0306dfb",
+    "result_hash": "hash123",
+    "reward": 100
+  },
+  {
+    "index": 1,
+    "job_id": "b141e8b7-7192-4cb2-b646-fa0388113297",
+    "result_hash": "hash123",
+    "reward": 100
+  }
+]
