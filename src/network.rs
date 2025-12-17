@@ -63,8 +63,6 @@ async fn get_balance(
     Json(state.lock().unwrap().balances.clone())
 }
 
-
-
 pub fn receive_chain(state: &mut NodeState, incoming: Vec<Block>) {
     if !validate_chain(&incoming) {
         println!("⛔ Rejected invalid chain");
