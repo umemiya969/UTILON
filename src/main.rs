@@ -1,35 +1,33 @@
+mod types;
+mod state;
 mod consensus;
 mod network;
-mod state;
-mod types;
+mod validate;
+mod storage;
 
-use axum::Server;
+
+use std::sync::{Arc, Mutex};
 use state::NodeState;
-use std::{
-    collections::{HashMap, HashSet},
-    net::SocketAddr,
-    sync::{Arc, Mutex},
-};
+use std::net::SocketAddr;
 
 #[tokio::main]
 async fn main() {
-    let state = Arc::new(NodeState {
-        jobs: Mutex::new(HashMap::new()),
-        votes: Mutex::new(HashMap::new()),
-        finalized: Mutex::new(HashSet::new()),
-        chain: Mutex::new(Vec::new()),
-        balances: Mutex::new(HashMap::new()),
-    });
 
+    use crate::storage::load_chain;
+
+    let mut state = NodeState::new();
+    state.chain = load_chain();
+    println!("📦 Loaded chain with {} blocks", state.chain.len());
+
+    use crate::storage::save_chain;
+
+    save_chain(&state.chain);
+
+    let state = Arc::new(Mutex::new(state));
     let app = network::router(state);
 
-    let port = std::env::var("PORT").unwrap_or("9933".into());
-    let addr: SocketAddr = format!("127.0.0.1:{}", port).parse().unwrap();
+    let addr: SocketAddr= "127.0.0.1:9933".parse().unwrap();
+    println!("🚀 UTILON node running at {}", addr);
 
-    println!("🚀 UTILON running at {}", addr);
-
-    Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    axum::serve(tokio::net::TcpListener::bind(addr).await.unwrap(), app).await.unwrap();
 }

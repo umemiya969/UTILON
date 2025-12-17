@@ -1,0 +1,12 @@
+/home/svfotocopy/Documents/utilon/UTILON/target/debug/deps/tinystr-7e4c6b6b532cfdf0.d: /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/lib.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/macros.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/ascii.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/asciibyte.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/error.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/int_ops.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/unvalidated.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/ule.rs
+
+/home/svfotocopy/Documents/utilon/UTILON/target/debug/deps/libtinystr-7e4c6b6b532cfdf0.rmeta: /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/lib.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/macros.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/ascii.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/asciibyte.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/error.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/int_ops.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/unvalidated.rs /home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/ule.rs
+
+/home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/lib.rs:
+/home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/macros.rs:
+/home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/ascii.rs:
+/home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/asciibyte.rs:
+/home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/error.rs:
+/home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/int_ops.rs:
+/home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/unvalidated.rs:
+/home/svfotocopy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/ule.rs:

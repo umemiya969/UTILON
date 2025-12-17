@@ -1,14 +1,21 @@
-use std::collections::{HashMap, HashSet};
-use std::sync::{Arc, Mutex};
-
+use std::collections::HashMap;
 use crate::types::*;
+use uuid::Uuid;
 
 pub struct NodeState {
-    pub jobs: Mutex<HashMap<String, Job>>,
-    pub votes: Mutex<HashMap<String, Vec<Vote>>>,
-    pub finalized: Mutex<HashSet<String>>,
-    pub chain: Mutex<Vec<Block>>,
-    pub balances: Mutex<HashMap<String, u64>>,
+    pub jobs: HashMap<Uuid, Job>,
+    pub votes: HashMap<Uuid, Vec<Vote>>,
+    pub chain: Vec<Block>,
+    pub balances: HashMap<String, u64>,
 }
 
-pub type SharedState = Arc<NodeState>;
+impl NodeState {
+    pub fn new() -> Self {
+        Self {
+            jobs: HashMap::new(),
+            votes: HashMap::new(),
+            chain: Vec::new(),
+            balances: HashMap::new(),
+        }
+    }
+}

@@ -1,77 +1,76 @@
-use axum::{
-    extract::State,
-    routing::{get, post},
-    Json, Router,
-};
+use axum::{Router, routing::{post, get}, Json, extract::State};
+use std::sync::{Arc, Mutex};
+use crate::{state::NodeState, types::*, consensus::try_finalize};
+use uuid::Uuid;
+use crate::validate::validate_chain;
 
-use crate::{
-    consensus::try_finalize,
-    state::SharedState,
-    types::{Block, Job, Vote},
-};
-
-use std::collections::HashMap;
-
-pub fn router(state: SharedState) -> Router {
+pub fn router(state: Arc<Mutex<NodeState>>) -> Router {
     Router::new()
         .route("/job", post(submit_job))
         .route("/vote", post(submit_vote))
-        .route("/finalize", post(finalize_job))
-        .route("/balances", get(get_balances))
+        .route("/finalize", post(finalize))
         .route("/chain", get(get_chain))
+        .route("/balance", get(get_balance))
         .with_state(state)
 }
 
 async fn submit_job(
-    State(state): State<SharedState>,
-    Json(job): Json<Job>,
-) -> Json<&'static str> {
-    state.jobs.lock().unwrap().insert(job.id.clone(), job);
-    Json("job accepted")
+    State(state): State<Arc<Mutex<NodeState>>>,
+    Json(mut job): Json<Job>,
+) -> Json<Job> {
+    job.id = Uuid::new_v4();
+    state.lock().unwrap().jobs.insert(job.id, job.clone());
+    Json(job)
 }
 
 async fn submit_vote(
-    State(state): State<SharedState>,
+    State(state): State<Arc<Mutex<NodeState>>>,
     Json(vote): Json<Vote>,
 ) -> Json<&'static str> {
-    state
-        .votes
-        .lock()
-        .unwrap()
-        .entry(vote.job_id.clone())
-        .or_default()
-        .push(vote);
+    let mut s = state.lock().unwrap();
+    let votes = s.votes.entry(vote.job_id).or_default();
 
-    Json("vote accepted")
+    if votes.iter().any(|v| v.worker == vote.worker) {
+        return Json("duplicate_vote");
+    }
+
+    votes.push(vote);
+    Json("ok")
 }
 
-async fn finalize_job(
-    State(state): State<SharedState>,
-    Json(payload): Json<serde_json::Value>,
-) -> Json<serde_json::Value> {
-    let job_id = payload["job_id"].as_str().unwrap();
 
-    match try_finalize(job_id, &state) {
-        Some(block) => Json(serde_json::json!({
-            "status": "finalized",
-            "block": block
-        })),
-        None => Json(serde_json::json!({
-            "status": "pending"
-        })),
+async fn finalize(
+    State(state): State<Arc<Mutex<NodeState>>>,
+    Json(id): Json<Uuid>,
+) -> Json<&'static str> {
+    let mut s = state.lock().unwrap();
+    match try_finalize(&mut s, id) {
+        Some(_) => Json("finalized"),
+        None => Json("not_ready"),
     }
 }
 
-/* ✅ FIXED: TYPE KONKRET */
-async fn get_balances(
-    State(state): State<SharedState>,
-) -> Json<HashMap<String, u64>> {
-    Json(state.balances.lock().unwrap().clone())
+async fn get_chain(
+    State(state): State<Arc<Mutex<NodeState>>>,
+) -> Json<Vec<Block>> {
+    Json(state.lock().unwrap().chain.clone())
 }
 
-/* ✅ FIXED: TYPE KONKRET */
-async fn get_chain(
-    State(state): State<SharedState>,
-) -> Json<Vec<Block>> {
-    Json(state.chain.lock().unwrap().clone())
+async fn get_balance(
+    State(state): State<Arc<Mutex<NodeState>>>,
+) -> Json<std::collections::HashMap<String, u64>> {
+    Json(state.lock().unwrap().balances.clone())
+}
+
+
+pub fn receive_chain(state: &mut NodeState, incoming: Vec<Block>) {
+    if !validate_chain(&incoming) {
+        println!("⛔ Rejected invalid chain from peer");
+        return;
+    }
+
+    if incoming.len() > state.chain.len() {
+        println!("🔄 Chain updated from peer");
+        state.chain = incoming;
+    }
 }
